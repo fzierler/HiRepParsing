@@ -37,7 +37,7 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits) wher
         c = parse_spectrum(file,type;disconnected=true,nhits)
         # write matrices to file
         for Γ in keys(c)
-            h5write(h5file,Γ,"$(type)_$(c[Γ])")
+            h5write(h5file,"$type/$Γ",c[Γ])
         end
     end
 end
@@ -49,7 +49,7 @@ function writehdf5_spectrum(file,h5file,types::Array{T}) where T <: AbstractStri
         c = parse_spectrum(file,type;disconnected=false)
         # write matrices to file
         for Γ in keys(c)
-            h5write(h5file,Γ,"$(type)_$(c[Γ])")
+            h5write(h5file,"$type/$Γ",c[Γ])
         end
     end
 end
