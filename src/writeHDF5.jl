@@ -8,7 +8,7 @@ function _write_lattice_setup(file,h5file)
     h5write(h5file,"lattice",latticesize(file))
 end
 
-function writehdf5_spectrum_disconnected(file,h5file,type,nhits)
+function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits)
     _write_lattice_setup(file,h5file)
     h5write(h5file,"sources",nhits)
     # read correlator data
@@ -19,7 +19,7 @@ function writehdf5_spectrum_disconnected(file,h5file,type,nhits)
     end
 end
 
-function writehdf5_spectrum(file,h5file,type)
+function writehdf5_spectrum(file,h5file,type::AbstractString)
     _write_lattice_setup(file,h5file)
     # read correlator data
     c = parse_spectrum(file,type;disconnected=false)
@@ -29,6 +29,30 @@ function writehdf5_spectrum(file,h5file,type)
     end
 end
 
+function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits) where T <: AbstractString
+    _write_lattice_setup(file,h5file)
+    h5write(h5file,"sources",nhits)
+    for type in types
+        # read correlator data
+        c = parse_spectrum(file,type;disconnected=true,nhits)
+        # write matrices to file
+        for Γ in keys(c)
+            h5write(h5file,Γ,"$(type)_$(c[Γ])")
+        end
+    end
+end
+
+function writehdf5_spectrum(file,h5file,types::Array{T}) where T <: AbstractString
+    _write_lattice_setup(file,h5file)
+    # read correlator data
+    for type in types
+        c = parse_spectrum(file,type;disconnected=false)
+        # write matrices to file
+        for Γ in keys(c)
+            h5write(h5file,Γ,"$(type)_$(c[Γ])")
+        end
+    end
+end
 function writehdf5_disconnected(file,h5file)
     _write_lattice_setup(file,h5file)
     # read correlator data
