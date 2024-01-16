@@ -38,7 +38,7 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;h5gro
         # write matrices to file
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
-            h5write(label,label,c[Γ])
+            h5write(h5file,label,c[Γ])
         end
     end
 end
