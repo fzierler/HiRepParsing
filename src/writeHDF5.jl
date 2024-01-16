@@ -29,27 +29,29 @@ function writehdf5_spectrum(file,h5file,type::AbstractString)
     end
 end
 
-function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits) where T <: AbstractString
-    _write_lattice_setup(file,h5file)
+function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;h5group="",setup=true) where T <: AbstractString
+    setup && _write_lattice_setup(file,h5file)
     h5write(h5file,"sources",nhits)
     for type in types
         # read correlator data
         c = parse_spectrum(file,type;disconnected=true,nhits)
         # write matrices to file
         for Γ in keys(c)
-            h5write(h5file,"$type/$Γ",c[Γ])
+            label = joinpath(h5group,type,Γ)
+            h5write(label,h5label,c[Γ])
         end
     end
 end
 
-function writehdf5_spectrum(file,h5file,types::Array{T}) where T <: AbstractString
-    _write_lattice_setup(file,h5file)
+function writehdf5_spectrum(file,h5file,types::Array{T};h5group="",setup=true) where T <: AbstractString
+    setup && _write_lattice_setup(file,h5file)
     # read correlator data
     for type in types
         c = parse_spectrum(file,type;disconnected=false)
         # write matrices to file
         for Γ in keys(c)
-            h5write(h5file,"$type/$Γ",c[Γ])
+            label = joinpath(h5group,type,Γ)
+            h5write(h5file,label,c[Γ])
         end
     end
 end
