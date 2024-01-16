@@ -31,7 +31,7 @@ end
 
 function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;h5group="",setup=true) where T <: AbstractString
     setup && _write_lattice_setup(file,h5file)
-    setup && h5write(h5file,"sources",nhits)
+    setup && h5write(h5file,joinpath(h5group,"sources"),nhits)
     for type in types
         # read correlator data
         c = parse_spectrum(file,type;disconnected=true,nhits)
