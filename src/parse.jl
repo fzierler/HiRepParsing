@@ -211,12 +211,12 @@ function _reshape_connected(dict;disconnected=false,nhits=1)
     for k in keys(dict[1])
         if disconnected
             corrs[k] = reshape_disconnected(reduce(hcat,getindex.(dict,k)),nhits)
+            # rename keys for disconnected measurements
+            corrs = _rename_disconnected_keys(corrs)
         else
             corrs[k] = permutedims(reduce(hcat,getindex.(dict,k)))
         end
     end
-    # rename keys for disconnected measurements
-    corrs = _rename_disconnected_keys(corrs)
     return corrs
 end
 function _rename_disconnected_keys(corrs_discon)
