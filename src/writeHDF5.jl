@@ -8,9 +8,9 @@ function _write_lattice_setup(file,h5file)
     h5write(h5file,"lattice",latticesize(file))
 end
 
-function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits)
-    _write_lattice_setup(file,h5file)
-    h5write(h5file,"sources",nhits)
+function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;setup=true)
+    setup && _write_lattice_setup(file,h5file)
+    setup && h5write(h5file,"sources",nhits)
     # read correlator data
     c = parse_spectrum(file,type;disconnected=true,nhits)
     # write matrices to file
@@ -19,8 +19,8 @@ function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits)
     end
 end
 
-function writehdf5_spectrum(file,h5file,type::AbstractString)
-    _write_lattice_setup(file,h5file)
+function writehdf5_spectrum(file,h5file,type::AbstractString;setup=true)
+    setup && _write_lattice_setup(file,h5file)
     # read correlator data
     c = parse_spectrum(file,type;disconnected=false)
     # write matrices to file
