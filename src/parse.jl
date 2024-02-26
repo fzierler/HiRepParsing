@@ -138,7 +138,7 @@ function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter
     conf0 = 0
     src0  = 0
     # keep track of position in file for progress meter
-    p = Progress(countlines(file), 1)
+    p = Progress(countlines(file); dt=1, desc="Match $type: Progress:")
     for line in eachline(file)
         next!(p)
         if occursin(type,line)
