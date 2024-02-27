@@ -110,6 +110,10 @@ function plaquettes_log(file)
     end
     return plaquettes
 end
+function _match_config_name(filename)
+    regex = r".*/(?<run>[^/]*)_(?<T>[0-9]+)x(?<L>[0-9]+)x[0-9]+x[0-9]+nc[0-9]+(?:r[A-Z]+)?(?:nf[0-9]+)?b(?<beta>[0-9]+\.[0-9]+)?(?:m-?[0-9]+\.[0-9]+)?n(?<conf>[0-9]+)"
+    return match(regex,filename)
+end
 function inverse_coupling_log(file)
     try
         l = split(file,"beta")[end]
@@ -118,9 +122,8 @@ function inverse_coupling_log(file)
     catch
         for line in eachline(file)
             if occursin("Configuration from",line)
-                l = split(line,"b")[end]
-                l = split(l,"m")[1]
-                β = parse(Float64,l)
+                match = _match_config_name(line)
+                β = parse(Float64,match[:beta])
                 return β
             end
         end
