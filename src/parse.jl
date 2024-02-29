@@ -14,6 +14,16 @@ function quarkmasses(file)
         return quarkmasses_log(file)
     end
 end
+function quarkmasses_chimera(file)
+    if HDF5.ishdf5(file) 
+        hdf5 = h5open(file, "r")
+        mf = read(hdf5,"quarkmasses_fundamental")
+        mas = read(hdf5,"quarkmasses_antisymmetric")
+        return mf, mas
+    else 
+        return quarkmasses_chimera_log(file)
+    end
+end
 function latticesize(file)
     if HDF5.ishdf5(file) 
         hdf5 = h5open(file, "r")
@@ -75,10 +85,10 @@ function gaugegroup_log(file)
         end
     end
 end
-function quarkmasses_log(file)
+function quarkmasses_log(file;pattern="[MAIN][0]Mass[0]")
     masses = Float64[]
     for line in eachline(file)
-        if occursin("[MAIN][0]Mass[0]",line)
+        if occursin(pattern,line)
             s = split(line,(","))
             for i in eachindex(s)
                 m = parse(Float64,split(s[i],"=")[2])
@@ -87,6 +97,11 @@ function quarkmasses_log(file)
             return masses
         end
     end
+end
+function quarkmasses_chimera_log(file)
+    mf  = quarkmasses_log(file;pattern="[MAIN][0]mf[0]")
+    mas = quarkmasses_log(file;pattern="[MAIN][0]mas[0]")
+    return mf, mas
 end
 function latticesize_log(file)
     for line in eachline(file)

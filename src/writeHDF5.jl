@@ -1,15 +1,21 @@
-function _write_lattice_setup(file,h5file)
+function _write_lattice_setup(file,h5file;mixed_rep=false)
     # save other relevant quantities
     h5write(h5file,"plaquette",plaquettes(file))
     h5write(h5file,"configurations",confignames(file))
     h5write(h5file,"gauge group",gaugegroup(file))
     h5write(h5file,"beta",inverse_coupling(file))
-    h5write(h5file,"quarkmasses",quarkmasses(file))
     h5write(h5file,"lattice",latticesize(file))
+    if !mixed_rep
+        h5write(h5file,"quarkmasses",quarkmasses(file))
+    else
+        mf, mas = quarkmasses_chimera(file)
+        h5write(h5file,"quarkmasses_fundamental",mf)
+        h5write(h5file,"quarkmasses_antisymmetric",mas)
+    end
 end
 
-function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;setup=true)
-    setup && _write_lattice_setup(file,h5file)
+function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;setup=true,mixed_rep=false)
+    setup && _write_lattice_setup(file,h5file;mixed_rep)
     setup && h5write(h5file,"sources",nhits)
     # read correlator data
     c = parse_spectrum(file,type;disconnected=true,nhits)
@@ -19,8 +25,8 @@ function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;
     end
 end
 
-function writehdf5_spectrum(file,h5file,type::AbstractString;setup=true)
-    setup && _write_lattice_setup(file,h5file)
+function writehdf5_spectrum(file,h5file,type::AbstractString;setup=true,mixed_rep=false)
+    setup && _write_lattice_setup(file,h5file;mixed_rep)
     # read correlator data
     c = parse_spectrum(file,type;disconnected=false)
     # write matrices to file
@@ -29,8 +35,8 @@ function writehdf5_spectrum(file,h5file,type::AbstractString;setup=true)
     end
 end
 
-function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;h5group="",setup=true) where T <: AbstractString
-    setup && _write_lattice_setup(file,h5file)
+function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;h5group="",setup=true,mixed_rep=false) where T <: AbstractString
+    setup && _write_lattice_setup(file,h5file;mixed_rep)
     setup && h5write(h5file,joinpath(h5group,"sources"),nhits)
     for type in types
         # read correlator data
@@ -43,8 +49,8 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;h5gro
     end
 end
 
-function writehdf5_spectrum(file,h5file,types::Array{T};h5group="",setup=true) where T <: AbstractString
-    setup && _write_lattice_setup(file,h5file)
+function writehdf5_spectrum(file,h5file,types::Array{T};h5group="",setup=true,mixed_rep=false) where T <: AbstractString
+    setup && _write_lattice_setup(file,h5file;mixed_rep)
     # read correlator data
     for type in types
         c = parse_spectrum(file,type;disconnected=false)
