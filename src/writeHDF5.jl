@@ -5,6 +5,10 @@ function _write_lattice_setup(file,h5file;mixed_rep=false)
     h5write(h5file,"gauge group",gaugegroup(file))
     h5write(h5file,"beta",inverse_coupling(file))
     h5write(h5file,"lattice",latticesize(file))
+    # get APE smearing parameters (arrays are empty if no smearing is used)
+    APE_eps, APE_level = APE_smearing(file)
+    h5write(h5file,"APE_eps",APE_eps)
+    h5write(h5file,"APE_level",APE_level)
     if !mixed_rep
         h5write(h5file,"quarkmasses",quarkmasses(file))
     else

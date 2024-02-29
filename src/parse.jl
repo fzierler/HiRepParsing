@@ -24,6 +24,16 @@ function quarkmasses_chimera(file)
         return quarkmasses_chimera_log(file)
     end
 end
+function APE_smearing(file)
+    if HDF5.ishdf5(file) 
+        hdf5 = h5open(file, "r")
+        APE_eps = read(hdf5,"APE_eps")
+        APE_level = read(hdf5,"APE_levels")
+        return APE_eps, APE_level
+    else 
+        return APE_smearing_logfile(file)
+    end
+end
 function latticesize(file)
     if HDF5.ishdf5(file) 
         hdf5 = h5open(file, "r")
@@ -143,6 +153,29 @@ function inverse_coupling_log(file)
             end
         end
     end
+end
+function APE_smearing_logfile(file)
+    APE_level = Int64[]
+    APE_eps   = Float64[]
+    # start with reference level for no smearing
+    N = -1
+    for line in eachline(file)
+        if startswith(line,"[APE][0]APE smearing with val")
+            eps = parse(Float64,last(split(line,"="))) 
+            append!(APE_eps,eps)
+        end
+        if startswith(line,"[APE][0]N=")
+            pos1 = length("[APE][0]N=") + 1
+            pos2 = findfirst('<',line) - 1
+            N0 = parse(Int,line[pos1:pos2]) 
+            N  = max(N,N0)
+        end
+        if startswith(line,"[APE][0]APE smearing END")
+            append!(APE_level,N)
+            N = -1 # reset to reference value for no smearing
+        end
+    end
+    return APE_eps, APE_level
 end
 function correlators_logfile(file,type,key;kws...)
     corrs = parse_spectrum(file,type;filterkey=true,key_pattern=key,kws...)
