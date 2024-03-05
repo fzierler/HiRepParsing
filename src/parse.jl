@@ -34,6 +34,16 @@ function APE_smearing(file)
         return APE_smearing_logfile(file)
     end
 end
+function Wuppertal_smearing_mixed(file)
+    if HDF5.ishdf5(file) 
+        hdf5 = h5open(file, "r")
+        antisymmetric_eps = read(hdf5,"Wuppertal_eps_anti")
+        fundamental_eps   = read(hdf5,"Wuppertal_eps_fund")
+        return antisymmetric_eps, fundamental_eps
+    else
+        return Wuppertal_smearing_mixed_logfile(file)
+    end
+end
 function latticesize(file)
     if HDF5.ishdf5(file) 
         hdf5 = h5open(file, "r")
@@ -176,6 +186,32 @@ function APE_smearing_logfile(file)
         end
     end
     return APE_eps, APE_level
+end
+function Wuppertal_smearing_mixed_logfile(file)
+    fundamental_eps = Float64[]
+    antisymmetric_eps = Float64[]
+    
+    #default reference values for no smearing
+    epsA = 0.0
+    epsF = 0.0
+
+    for line in eachline(file)
+        if startswith(line,"[SMEAR][0]source smearing epsilon =")
+            pos1 = length("[SMEAR][0]source smearing epsilon =") + 1
+            pos2 = first(findfirst("iterations:",line)) - 1
+            epsA = parse(Float64,line[pos1:pos2])
+        end
+        if startswith(line,"[SMEAR][0]Fundamental source smearing epsilon =")
+            pos1 = length("[SMEAR][0]Fundamental source smearing epsilon =") + 1
+            pos2 = first(findfirst("iterations:",line)) - 1
+            epsF = parse(Float64,line[pos1:pos2])
+        end
+        if occursin("analysed", line)
+            append!(antisymmetric_eps,epsA)
+            append!(fundamental_eps,epsF)
+        end
+    end
+    return antisymmetric_eps, fundamental_eps
 end
 function correlators_logfile(file,type,key;kws...)
     corrs = parse_spectrum(file,type;filterkey=true,key_pattern=key,kws...)
