@@ -22,24 +22,26 @@ function _write_lattice_setup(file,h5file;mixed_rep=false)
     end
 end
 
-function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;setup=true,mixed_rep=false)
+function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;h5group="",setup=true,mixed_rep=false)
     setup && _write_lattice_setup(file,h5file;mixed_rep)
     setup && h5write(h5file,"sources",nhits)
     # read correlator data
     c = parse_spectrum(file,type;disconnected=true,nhits)
     # write matrices to file
     for Γ in keys(c)
-        h5write(h5file,Γ,c[Γ])
+        label = joinpath(h5group,type,Γ)
+        h5write(h5file,label,c[Γ])
     end
 end
 
-function writehdf5_spectrum(file,h5file,type::AbstractString;setup=true,mixed_rep=false)
+function writehdf5_spectrum(file,h5file,type::AbstractString;h5group="",setup=true,mixed_rep=false)
     setup && _write_lattice_setup(file,h5file;mixed_rep)
     # read correlator data
     c = parse_spectrum(file,type;disconnected=false)
     # write matrices to file
     for Γ in keys(c)
-        h5write(h5file,Γ,c[Γ])
+        label = joinpath(h5group,type,Γ)
+        h5write(h5file,label,c[Γ])
     end
 end
 
