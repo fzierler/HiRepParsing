@@ -1,7 +1,6 @@
 using HiRepParsing
 
-
-dir = "/home/fabian/Downloads/lsd_out/"
+dir = "/media/fabian/External SSD/ChimeraData/lsd_out"
 h5file = "/home/fabian/Downloads/lsd_out_new.hdf5"
 
 function main(dir,h5file)
