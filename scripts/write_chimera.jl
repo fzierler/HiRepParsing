@@ -1,14 +1,15 @@
 using HiRepParsing
+using HDF5
 
-dir = "/media/fabian/External SSD/ChimeraData/lsd_out"
-h5file = "/home/fabian/Downloads/lsd_out_new.hdf5"
+dir = "/home/fabian/Documents/DataDiaL/LSD"
+h5file = "/home/fabian/Downloads/lsd_out.hdf5"
 
 function main(dir,h5file)
 
-    setup = false
+    group0 = "" 
 
     for file in readdir(dir,join=true)
-        contains(file,".txt") || continue
+        endswith(file,".txt") || continue
 
         regex = r"N(?<N1>[0-9]+)_N(?<N2>[0-9]+)"
         m = match(regex,basename(file))
@@ -18,9 +19,13 @@ function main(dir,h5file)
         name  = first(splitext(basename(file)))
 
         group = replace(name,"N$(N1)_N$(N2)"=>"")
-        types = ["source_N$(N1)_sink_N$N" for N in 0:10:N2]
+        types = ["source_N$(N1)_sink_N$N" for N in 0:40:N2]
+
+        setup  = group != group0
+        group0 = group
+        @show group, setup 
+
         writehdf5_spectrum(file,h5file,types;mixed_rep=true,h5group=group,setup)
-        setup = false
     end
 end
 

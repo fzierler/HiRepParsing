@@ -58,7 +58,8 @@ end
 
 function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group) where T <: AbstractString
     names = confignames(file)
-    perm  = sort ? permutation_names(names) :  collect(eachindex(names))    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
+    perm  = sort ? permutation_names(names) :  collect(eachindex(names))    
+    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     setup && h5write(h5file,joinpath(h5group_setup,"sources"),nhits)
     for type in types
         # read correlator data
