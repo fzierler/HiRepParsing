@@ -29,7 +29,7 @@ function _write_lattice_setup(file,h5file;mixed_rep=false,h5group="",sort=false)
     end
 end
 
-function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group, kws...)
+function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group,filter_channels=false,channels=nothing, kws...)
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
@@ -39,11 +39,12 @@ function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;
     # write matrices to file
     for Γ in keys(c)
         label = joinpath(h5group,type,Γ)
+        filter_channels && Γ ∉ channels && continue
         h5write(h5file,label,c[Γ][perm,:,:];kws...)
     end
 end
 
-function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group, kws...)
+function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group,filter_channels=false,channels=nothing, kws...)
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
@@ -52,11 +53,12 @@ function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group=
     # write matrices to file
     for Γ in keys(c)
         label = joinpath(h5group,type,Γ)
+        filter_channels && Γ ∉ channels && continue
         h5write(h5file,label,c[Γ][perm,:];kws...)
     end
 end
 
-function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group, kws...) where T <: AbstractString
+function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group,filter_channels=false,channels=nothing, kws...) where T <: AbstractString
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))    
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
@@ -68,12 +70,13 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=
         dataset = h5open(h5file,"cw")
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
+            filter_channels && Γ ∉ channels && continue
             write(dataset,label,c[Γ][perm,:,:];kws...)
         end
     end
 end
 
-function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",setup=true,mixed_rep=false, h5group_setup = h5group, kws...) where T <: AbstractString
+function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",setup=true,mixed_rep=false, h5group_setup = h5group,filter_channels=false,channels=nothing, kws...) where T <: AbstractString
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
@@ -82,9 +85,9 @@ function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",se
         c = parse_spectrum(file,type;disconnected=false)
         # write matrices to file
         dataset = h5open(h5file,"cw")
-        @show kws
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
+            filter_channels && Γ ∉ channels && continue
             write(dataset,label,c[Γ][perm,:];kws...)
         end
     end
