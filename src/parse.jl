@@ -315,6 +315,94 @@ function _rename_disconnected_keys(corrs_discon)
     end
     return new_corrs_discon
 end
+#####################################################
+# Parsing using regular expressions (for smearing)  #
+#####################################################
+function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,mass="",filterkey=false,key_pattern="",nhits=1,with_progress=false)
+    T = latticesize(file)[1]
+    corr = zeros(T) # preallocate array for parsing of correlator
+    dict = Dict{String,Vector{Float64}}()
+    dictarray = Dict{String,Vector{Float64}}[]
+    conf0 = 0
+    src0  = 0
+    # keep track of position in file for progress meter
+    if with_progress 
+        p = Progress(countlines(file); dt=1, desc="Match $type: Progress:")
+        linecount = 0
+    end
+    for line in eachline(file)
+        if with_progress
+            linecount += 1
+            # don't update the progress meter after every line
+            linecount%100 == 0 && update!(p,linecount)
+        end
+        if occursin(type,line)
+            m = match(type,line)
+            matched_type = m.match
+            if masses
+                occursin("mass=$mass",line) || continue
+            end
+            if filterkey                    
+                occursin(key_pattern,line) || continue
+            end
+            # get configuration number
+            pos_num = findfirst('#',line)
+            end_num = findnext(' ',line,pos_num)
+            conf = parse(Int,line[pos_num+1:end_num-1])
+            # find number of the source if available
+            if disconnected
+                pos_src = last(findfirst("src",line))+1
+                end_src = findnext(' ',line,pos_src+1)
+                src = parse(Int,line[pos_src:end_src])
+            else
+                src = 0
+            end
+            # find last '=' sign which separates values from Γ structure
+            # TODO this does not work for momenta
+            pos_eq = findlast('=',line)
+            key_st = last(findfirst(matched_type,line))+1
+            key = joinpath(matched_type,line[key_st+1:pos_eq-1])
+            if disconnected
+                # create new entry if configuration or source number changes
+                # if we need to parse more than one source at a time per configuration
+                if conf0 != conf || src0 != src
+                    if !isempty(dict)
+                        push!(dictarray,dict)
+                        dict = Dict{String,Vector{Float64}}()
+                    end
+                end
+            end
+            # parse corrrelator values
+            pos_0 = findnext(' ',line,pos_eq)
+            for t in 1:T
+                pos_1 = findnext(' ',line,pos_0+1)
+                corr[t] = Parsers.parse(Float64,line[pos_0:pos_1])
+                pos_0 = pos_1
+            end
+            dict[key] = copy(corr)
+            conf0 = conf
+            src0  = src
+        end
+        if !disconnected
+            # If we only have one source at a time and possibly one configuration
+            # at a time: the method used to separate distinct measurements fails. 
+            # In this case the end of measurement on a given confiuration is 
+            # signaled by a line that reads:
+            # [MAIN][0]Configuration #N: analysed in [a sec b usec]
+            if occursin("analysed",line)
+                if !isempty(dict)
+                    push!(dictarray,dict)
+                    dict = Dict{String,Vector{Float64}}()
+                end
+            end
+        end
+    end
+    with_progress && finish!(p)
+    if !isempty(dict)
+        push!(dictarray,dict)
+    end
+    return _reshape_connected(dictarray;disconnected,nhits)
+end
 #################################################
 # Disconnected Measurements from /Disocnnected  #
 ################################################# 
