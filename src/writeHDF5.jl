@@ -40,7 +40,8 @@ function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;
     for Γ in keys(c)
         label = joinpath(h5group,type,Γ)
         filter_channels && Γ ∉ channels && continue
-        h5write(h5file,label,c[Γ][perm,:,:];kws...)
+        sort && h5write(h5file,label,c[Γ][perm,:,:];kws...)
+        sort || h5write(h5file,label,c[Γ];kws...)
     end
 end
 
@@ -54,7 +55,8 @@ function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group=
     for Γ in keys(c)
         label = joinpath(h5group,type,Γ)
         filter_channels && Γ ∉ channels && continue
-        h5write(h5file,label,c[Γ][perm,:];kws...)
+        sort && h5write(h5file,label,c[Γ][perm,:];kws...)
+        sort || h5write(h5file,label,c[Γ];kws...)
     end
 end
 
@@ -71,7 +73,8 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
             filter_channels && Γ ∉ channels && continue
-            write(dataset,label,c[Γ][perm,:,:];kws...)
+            sort && write(dataset,label,c[Γ][perm,:,:];kws...)
+            sort || write(dataset,label,c[Γ];kws...)
         end
     end
 end
@@ -88,7 +91,8 @@ function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",se
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
             filter_channels && Γ ∉ channels && continue
-            write(dataset,label,c[Γ][perm,:];kws...)
+            sort && write(dataset,label,c[Γ][perm,:];kws...)
+            sort || write(dataset,label,c[Γ];kws...)
         end
     end
 end
@@ -109,7 +113,8 @@ function writehdf5_spectrum_disconnected_with_regexp(file,h5file,rgx::Regex,nhit
         type,Γ = splitpath(key)
         label = joinpath(h5group,type,Γ)
         filter_channels && Γ ∉ channels && continue
-        write(dataset,label,c[key][perm,:,:];kws...)
+        sort && write(dataset,label,c[key][perm,:,:];kws...)
+        sort || write(dataset,label,c[key];kws...)
     end
 end
 function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5group="",setup=true,mixed_rep=false, h5group_setup = h5group,filter_channels=false,channels=nothing, kws...)
@@ -125,7 +130,8 @@ function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5grou
         type,Γ = splitpath(key)
         label  = joinpath(h5group,type,Γ)
         filter_channels && Γ ∉ channels && continue
-        write(dataset,label,c[key][perm,:];kws...)
+        sort && write(dataset,label,c[key][perm,:];kws...)
+        sort || write(dataset,label,c[key];kws...)
     end
 end
 function writehdf5_disconnected(file,h5file)
