@@ -7,8 +7,9 @@ using HDF5
 # It creates a single hdf5 file for all log files. Measurements performed on the same ensemble
 # are written in distinct hdf5 groups labelled  by the variable `ensemble`
 
-dir = "~/Documents/DataDiaL/LSD"
-h5file = "~/Downloads/chimera_data.hdf5"
+dir = expanduser("~/Documents/DataDiaL/LSD")
+h5file = expanduser("~/Downloads/chimera_data.hdf5")
+use_regex_parsing = false
 
 function main(dir,h5file)
 
@@ -27,24 +28,35 @@ function main(dir,h5file)
         endswith(file,".txt") || continue
 
         # set up a regular expression, that matches the measurement type and the different smearing levels.
+        # Note that the steps in the smearing levels are hard-coded
         regex = r"N(?<N1>[0-9]+)_N(?<N2>[0-9]+)"
         m = match(regex,basename(file))
         N1 = parse(Int,m[:N1])
         N2 = parse(Int,m[:N2])
         name  = first(splitext(basename(file)))
         types = ["source_N$(N1)_sink_N$N" for N in 0:10:N2]
-
+        
         # parse the ensemble name from the filename 
         # (again this depends strongly on the naming scheme)
-        ensemble = replace(name,"N$(N1)_N$(N2)"=>"")
-
         # Check if we need to write the lattice-setupparameters to hdf5 file
+        ensemble = replace(name,"N$(N1)_N$(N2)"=>"")
         setup     = ensemble != ensemble0
         ensemble0 = ensemble
         @show ensemble, setup 
+              
+        #####################################################
+        # Method A: Using a list of types                   #
+        #####################################################
+        ###################################################################################
+        # Method B: Using a regular expression directly  (faster, but it uses more ram)   #
+        ###################################################################################
+        if use_regex_parsing
+            regex = r"source_N[0-9]+_sink_N[0-9]+"
+            writehdf5_spectrum_with_regexp(file,h5file,regex;mixed_rep=true,h5group=ensemble,setup)
+        else
+            writehdf5_spectrum(file,h5file,types;mixed_rep=true,h5group=ensemble,setup)
+        end
 
-        # With mixed_rep=true, we write the individual fermion masses, and smearing parameters to the hdf5 file
-        writehdf5_spectrum(file,h5file,types;mixed_rep=true,h5group=ensemble,setup)
     end
 end
 
