@@ -1,0 +1,56 @@
+anti TRIPLET g5
+anti TRIPLET id
+anti TRIPLET g1
+anti TRIPLET g2
+anti TRIPLET g3
+anti TRIPLET g0g1
+anti TRIPLET g0g2
+anti TRIPLET g0g3
+anti TRIPLET g5g1
+anti TRIPLET g5g2
+anti TRIPLET g5g3
+anti TRIPLET g0g5g1
+anti TRIPLET g0g5g2
+anti TRIPLET g0g5g3
+anti TRIPLET g0g1_g1_re
+anti TRIPLET g0g2_g2_re
+anti TRIPLET g0g3_g3_re
+anti TRIPLET g1_g0g1_re
+anti TRIPLET g2_g0g2_re
+anti TRIPLET g3_g0g3_re
+anti TRIPLET g5_g0g5_re
+anti TRIPLET g0g5_g5_re
+fund TRIPLET g5
+fund TRIPLET id
+fund TRIPLET g1
+fund TRIPLET g2
+fund TRIPLET g3
+fund TRIPLET g0g1
+fund TRIPLET g0g2
+fund TRIPLET g0g3
+fund TRIPLET g5g1
+fund TRIPLET g5g2
+fund TRIPLET g5g3
+fund TRIPLET g0g5g1
+fund TRIPLET g0g5g2
+fund TRIPLET g0g5g3
+fund TRIPLET g0g1_g1_re
+fund TRIPLET g0g2_g2_re
+fund TRIPLET g0g3_g3_re
+fund TRIPLET g1_g0g1_re
+fund TRIPLET g2_g0g2_re
+fund TRIPLET g3_g0g3_re
+fund TRIPLET g5_g0g5_re
+fund TRIPLET g0g5_g5_re
+Chimera_OC_even_im
+Chimera_OC_even_re
+Chimera_OC_odd_im
+Chimera_OC_odd_re
+Chimera_OV12_even_im
+Chimera_OV12_even_re
+Chimera_OV12_odd_im
+Chimera_OV12_odd_re
+Chimera_OV32_even_im
+Chimera_OV32_even_re
+Chimera_OV32_odd_im
+Chimera_OV32_odd_re
