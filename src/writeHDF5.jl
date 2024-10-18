@@ -65,11 +65,11 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))    
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     setup && h5write(h5file,joinpath(h5group_setup,"sources"),nhits)
+    dataset = h5open(h5file,"cw")
     @showprogress "Parse logfile for disconnected diagrams:" for type in types
         # read correlator data
         c = parse_spectrum(file,type;disconnected=true,nhits,with_progress=false)
         # write matrices to file
-        dataset = h5open(h5file,"cw")
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
             filter_channels && Γ ∉ channels && continue
@@ -77,6 +77,7 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=
             sort || write(dataset,label,c[Γ];kws...)
         end
     end
+    close(dataset)
 end
 
 function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",setup=true,mixed_rep=false, h5group_setup = h5group,filter_channels=false,channels=nothing, kws...) where T <: AbstractString
@@ -84,10 +85,10 @@ function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",se
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     # read correlator data
-    @showprogress "Parse logfile for    connected diagrams:" for type in types
+    dataset = h5open(h5file,"cw")
+    @showprogress "Parse logfile for connected diagrams:" for type in types
         c = parse_spectrum(file,type;disconnected=false,with_progress=false)
         # write matrices to file
-        dataset = h5open(h5file,"cw")
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
             filter_channels && Γ ∉ channels && continue
@@ -95,6 +96,7 @@ function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",se
             sort || write(dataset,label,c[Γ];kws...)
         end
     end
+    close(dataset)
 end
 #####################################################
 # Parsing using regular expressions (for smearing)  #
@@ -116,6 +118,7 @@ function writehdf5_spectrum_disconnected_with_regexp(file,h5file,rgx::Regex,nhit
         sort && write(dataset,label,c[key][perm,:,:];kws...)
         sort || write(dataset,label,c[key];kws...)
     end
+    close(dataset)
 end
 function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5group="",setup=true,mixed_rep=false, h5group_setup = h5group,filter_channels=false,channels=nothing, kws...)
     names = confignames(file)
@@ -133,6 +136,7 @@ function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5grou
         sort && write(dataset,label,c[key][perm,:];kws...)
         sort || write(dataset,label,c[key];kws...)
     end
+    close(dataset)
 end
 function writehdf5_disconnected(file,h5file)
     _write_lattice_setup(file,h5file)
