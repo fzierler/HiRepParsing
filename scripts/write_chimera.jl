@@ -7,8 +7,8 @@ using HDF5
 # It creates a single hdf5 file for all log files. Measurements performed on the same ensemble
 # are written in distinct hdf5 groups labelled  by the variable `ensemble`
 
-dir = expanduser("/home/fabian/Downloads/Chimera_Data_new/logs/")
-h5file = expanduser("~/Downloads/chimera_data_reduced_new.hdf5")
+dir = expanduser("/home/fabian/Documents/Physics/Data/Chimera_Data_new/parse/")
+h5file = expanduser("~/Downloads/chimera_data_reduced_new30.hdf5")
 use_regex_parsing = false
 
 filter_channels=true
@@ -37,7 +37,7 @@ function main(dir,h5file;setup=true,filter_channels=false,channels=nothing)
         N1 = parse(Int,m[:N1])
         N2 = parse(Int,m[:N2])
         name  = first(splitext(basename(file)))
-        types = ["source_N$(N1)_sink_N$N" for N in 0:40:80]
+        types = ["source_N$(N1)_sink_N$N" for N in ["0","40","80"]]
         
         # parse the ensemble name from the filename 
         # (again this depends strongly on the naming scheme)
@@ -47,6 +47,7 @@ function main(dir,h5file;setup=true,filter_channels=false,channels=nothing)
             setup     = ensemble != ensemble0
         end
         ensemble0 = ensemble
+        @show file
         @show ensemble, setup 
               
         ###################################################################################
@@ -57,9 +58,9 @@ function main(dir,h5file;setup=true,filter_channels=false,channels=nothing)
         #####################################################
         if use_regex_parsing
             regex = r"source_N[0-9]+_sink_N[0,40,80]"
-            writehdf5_spectrum_with_regexp(file,h5file,regex;mixed_rep=true,h5group=ensemble,setup,filter_channels,channels)
+            writehdf5_spectrum_with_regexp(file,h5file,regex;mixed_rep=true,h5group=ensemble,setup,filter_channels,channels,sort=true)
         else
-            writehdf5_spectrum(file,h5file,types;mixed_rep=true,h5group=ensemble,setup,filter_channels,channels)
+            writehdf5_spectrum(file,h5file,types;mixed_rep=true,h5group=ensemble,setup,filter_channels,channels,sort=true)
         end
 
     end
