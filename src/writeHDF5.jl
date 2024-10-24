@@ -35,7 +35,7 @@ function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     setup && h5write(h5file,joinpath(h5group_setup,"sources"),nhits)
     # read correlator data
-    c = parse_spectrum(file,type;disconnected=true,nhits)
+    c = parse_spectrum(file,type;disconnected=true,nhits,filterkey=filter_channels,keys=channels)
     # write matrices to file
     for Γ in keys(c)
         label = joinpath(h5group,type,Γ)
@@ -50,7 +50,7 @@ function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group=
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     # read correlator data
-    c = parse_spectrum(file,type;disconnected=false)
+    c = parse_spectrum(file,type;disconnected=false,filterkey=filter_channels,keys=channels)
     # write matrices to file
     for Γ in keys(c)
         label = joinpath(h5group,type,Γ)
@@ -68,7 +68,7 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=
     dataset = h5open(h5file,"cw")
     @showprogress "Parse logfile for disconnected diagrams:" for type in types
         # read correlator data
-        c = parse_spectrum(file,type;disconnected=true,nhits,with_progress=false)
+        c = parse_spectrum(file,type;disconnected=true,nhits,with_progress=false,filterkey=filter_channels,keys=channels)
         # write matrices to file
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
@@ -87,7 +87,7 @@ function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",se
     # read correlator data
     dataset = h5open(h5file,"cw")
     @showprogress "Parse logfile for connected diagrams:" for type in types
-        c = parse_spectrum(file,type;disconnected=false,with_progress=false)
+        c = parse_spectrum(file,type;disconnected=false,with_progress=false,filterkey=filter_channels,keys=channels)
         # write matrices to file
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
@@ -108,7 +108,7 @@ function writehdf5_spectrum_disconnected_with_regexp(file,h5file,rgx::Regex,nhit
     setup && h5write(h5file,joinpath(h5group_setup,"sources"),nhits)
 
     # read correlator data
-    c = parse_spectrum_with_regexp(file,rgx;disconnected=true,nhits,with_progress=true)
+    c = parse_spectrum_with_regexp(file,rgx;disconnected=true,nhits,with_progress=true,filterkey=filter_channels,keys=channels)
     # write matrices to file
     dataset = h5open(h5file,"cw")
     for key in keys(c)
@@ -126,7 +126,7 @@ function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5grou
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
 
     # read correlator data
-    c = parse_spectrum_with_regexp(file,rgx;disconnected=false,with_progress=true)
+    c = parse_spectrum_with_regexp(file,rgx;disconnected=false,with_progress=true,filterkey=filter_channels,keys=channels)
     # write matrices to file
     dataset = h5open(h5file,"cw")
     for key in keys(c)

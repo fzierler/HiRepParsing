@@ -214,16 +214,24 @@ function Wuppertal_smearing_mixed_logfile(file)
     return antisymmetric_eps, fundamental_eps
 end
 function correlators_logfile(file,type,key;kws...)
-    corrs = parse_spectrum(file,type;filterkey=true,key_pattern=key,kws...)
+    corrs = parse_spectrum(file,type;filterkey=true,keys=[key],kws...)
     return reduce(hcat,getindex.(corrs,key))
 end
-function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filterkey=false,key_pattern="",nhits=1,with_progress=false)
+function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filterkey=false,keys="",nhits=1,with_progress=false)
     T = latticesize(file)[1]
     corr = zeros(T) # preallocate array for parsing of correlator
     dict = Dict{String,Vector{Float64}}()
     dictarray = Dict{String,Vector{Float64}}[]
     conf0 = 0
     src0  = 0
+    # when filtering for specific keys also allow them to end with "_re" and "_im"
+    if filterkey
+        if disconnected
+            append!(keys,keys.*"disc_re",keys.*"disc_im")
+        else
+            append!(keys,keys.*"_re",keys.*"_im")
+        end
+    end
     # keep track of position in file for progress meter
     with_progress && (p = Progress(countlines(file); dt=1, desc="Match $type: Progress:"))
     for line in eachline(file)
@@ -231,9 +239,6 @@ function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter
         if occursin(type,line)
             if masses
                 occursin("mass=$mass",line) || continue
-            end
-            if filterkey                    
-                occursin(key_pattern,line) || continue
             end
             # get configuration number
             pos_num = findfirst('#',line)
@@ -253,6 +258,11 @@ function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter
             #key_st = findprev(' ',line,pos_eq)
             key_st = last(findfirst(type,line))+1
             key = line[key_st+1:pos_eq-1]
+            if filterkey
+                if last(split(key,"/")) ∉ keys
+                    continue
+                end
+            end
             if disconnected
                 # create new entry if configuration or source number changes
                 # if we need to parse more than one source at a time per configuration
@@ -318,13 +328,21 @@ end
 #####################################################
 # Parsing using regular expressions (for smearing)  #
 #####################################################
-function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,mass="",filterkey=false,key_pattern="",nhits=1,with_progress=false)
+function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,mass="",filterkey=false,keys="",nhits=1,with_progress=false)
     T = latticesize(file)[1]
     corr = zeros(T) # preallocate array for parsing of correlator
     dict = Dict{String,Vector{Float64}}()
     dictarray = Dict{String,Vector{Float64}}[]
     conf0 = 0
     src0  = 0
+    # when filtering for specific keys also allow them to end with "_re" and "_im"
+    if filterkey
+        if disconnected
+            append!(keys,keys.*"disc_re",keys.*"disc_im")
+        else
+            append!(keys,keys.*"_re",keys.*"_im")
+        end
+    end
     # keep track of position in file for progress meter
     if with_progress 
         p = Progress(countlines(file); dt=1, desc="Match $type: Progress:")
@@ -341,9 +359,6 @@ function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,ma
             matched_type = m.match
             if masses
                 occursin("mass=$mass",line) || continue
-            end
-            if filterkey                    
-                occursin(key_pattern,line) || continue
             end
             # get configuration number
             pos_num = findfirst('#',line)
@@ -362,6 +377,11 @@ function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,ma
             pos_eq = findlast('=',line)
             key_st = last(findfirst(matched_type,line))+1
             key = joinpath(matched_type,line[key_st+1:pos_eq-1])
+            if filterkey
+                if last(split(key,"/")) ∉ keys
+                    continue
+                end
+            end
             if disconnected
                 # create new entry if configuration or source number changes
                 # if we need to parse more than one source at a time per configuration
