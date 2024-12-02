@@ -104,6 +104,7 @@ function gaugegroup_log(file)
             return strip(line[pos:end])
         end
     end
+    return ""
 end
 function quarkmasses_log(file;pattern="[MAIN][0]Mass[0]")
     masses = Float64[]
@@ -117,6 +118,7 @@ function quarkmasses_log(file;pattern="[MAIN][0]Mass[0]")
             return masses
         end
     end
+    return ""
 end
 function quarkmasses_chimera_log(file)
     mf  = quarkmasses_log(file;pattern="[MAIN][0]mf[0]")
@@ -132,6 +134,7 @@ function latticesize_log(file)
             return latticesize
         end
     end
+    return ""
 end
 function plaquettes_log(file)
     plaquettes = Float64[]
