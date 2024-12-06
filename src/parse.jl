@@ -230,9 +230,9 @@ function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter
     # when filtering for specific keys also allow them to end with "_re" and "_im"
     if filter_channels
         if disconnected
-            all_channels = hcat(channels.*"disc_re",channels.*"disc_im")
+            all_channels = hcat(channels,channels.*"_disc_re",channels.*"_disc_im")
         else
-            all_channels = hcat(channels,channels.*"_re",channels.*"_im")
+            all_channels = hcat(channels,channels.*"_re",    channels.*"_im")
         end
     end
     # keep track of position in file for progress meter
@@ -341,9 +341,9 @@ function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,ma
     # when filtering for specific keys also allow them to end with "_re" and "_im"
     if filter_channels
         if disconnected
-            all_channels = hcat(channels.*"disc_re",channels.*"disc_im")
+            all_channels = hcat(channels,channels.*"_disc_re",channels.*"_disc_im")
         else
-            all_channels = hcat(channels,channels.*"_re",channels.*"_im")
+            all_channels = hcat(channels,channels.*"_re",    channels.*"_im")
         end
     end
     # keep track of position in file for progress meter
