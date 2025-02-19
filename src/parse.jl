@@ -106,16 +106,17 @@ function gaugegroup_log(file)
     end
     return ""
 end
-function quarkmasses_log(file;pattern="[MAIN][0]Mass[0]")
+function quarkmasses_log(file;pattern=r"\[MAIN\]\[0\](M|m)ass")
     masses = Float64[]
     for line in eachline(file)
         if occursin(pattern,line)
             s = split(line,(","))
             for i in eachindex(s)
-                m = parse(Float64,split(s[i],"=")[2])
+                s0 = split(s[i],r"(=|:|;)")[2:end]
+                m  = parse.(Float64,s0)
                 append!(masses,m)
             end
-            return masses
+            return unique(masses)
         end
     end
     return ""
