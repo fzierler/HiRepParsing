@@ -2,13 +2,23 @@ function permutation_names(names)
     numbers = parse.(Int,last.(split.(names,"n")))
     return sortperm(numbers)
 end
-function _write_lattice_setup(file,h5file;mixed_rep=false,h5group="",sort=false,smearing=true)
+unique_indices(v) = unique(i -> v[i], eachindex(v))
+function _write_lattice_setup(file,h5file;mixed_rep=false,h5group="",sort=false,smearing=true,deduplicate=false)
     plaq  = plaquettes(file)
     names = confignames(file)
-    perm  = sort ? permutation_names(names) :  collect(eachindex(names))
+    if sort
+        perm = permutation_names(names)
+        plaq = plaq[perm]
+        names= names[perm]
+    end
+    if deduplicate
+        inds = unique_indices(names)
+        plaq = plaq[inds]
+        names= names[inds]
+    end
     # save other relevant quantities
-    h5write(h5file,joinpath(h5group,"plaquette"),plaq[perm])
-    h5write(h5file,joinpath(h5group,"configurations"),names[perm])
+    h5write(h5file,joinpath(h5group,"plaquette"),plaq)
+    h5write(h5file,joinpath(h5group,"configurations"),names)
     h5write(h5file,joinpath(h5group,"gauge group"),gaugegroup(file))
     h5write(h5file,joinpath(h5group,"beta"),inverse_coupling(file))
     h5write(h5file,joinpath(h5group,"lattice"),latticesize(file))
