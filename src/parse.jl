@@ -575,17 +575,14 @@ function confignames_and_plaquette(file)
     fns = AbstractString[]
     plaquettes = Float64[]
     for line in eachline(file)
-        if occursin("read",line)
-            if occursin("Configuration",line)
-                pos1 = findlast('/',line)
-                pos2 = findnext(']',line,pos1)
-                push!(fns,line[pos1+1:pos2-1])
-            end
-        end
-        if occursin("Plaquette",line)
-            line = replace(line,"="=>" ")
-            line = replace(line,":"=>" ")
-            p = parse(Float64,split(line)[end])
+        if startswith(line,"[IO][0]Configuration")
+            # parse filename first
+            pos1 = findlast('/',line)
+            pos2 = findnext(']',line,pos1)
+            push!(fns,line[pos1+1:pos2-1])
+            # then parse plaquette
+            posP = findlast('=',line) + 1            
+            p = parse(Float64,line[posP:end])
             append!(plaquettes,p)
         end
     end
