@@ -4,24 +4,22 @@ function permutation_names(names)
 end
 unique_indices(v) = unique(i -> v[i], eachindex(v))
 function _write_lattice_setup(file,h5file;mixed_rep=false,h5group="",sort=false,smearing=true,deduplicate=false)
-    plaq  = plaquettes(file)
-    names = confignames(file)
-    if sort
-        perm = permutation_names(names)
-        plaq = plaq[perm]
-        names= names[perm]
-    end
-    if deduplicate
-        inds = unique_indices(names)
-        plaq = plaq[inds]
-        names= names[inds]
-    end
+    names, plaq = confignames_and_plaquette(file)
+    perm  = sort ? permutation_names(names) : eachindex(names)
+    inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm]) 
+    plaq  = plaq[perm][inds]
+    names = names[perm][inds]
     # save other relevant quantities
     h5write(h5file,joinpath(h5group,"plaquette"),plaq)
     h5write(h5file,joinpath(h5group,"configurations"),names)
     h5write(h5file,joinpath(h5group,"gauge group"),gaugegroup(file))
     h5write(h5file,joinpath(h5group,"beta"),inverse_coupling(file))
     h5write(h5file,joinpath(h5group,"lattice"),latticesize(file))
+    # write information on the applied sorting and deduplication to file
+    h5write(h5file,joinpath(h5group,"sorted"),sort)
+    h5write(h5file,joinpath(h5group,"deduplicated"),deduplicate)
+    h5write(h5file,joinpath(h5group,"sort_permutation"),perm)
+    h5write(h5file,joinpath(h5group,"deduplicated_indices"),inds)
     # get smearing parameters (arrays are empty if no smearing is used)
     if smearing
         APE_eps, APE_level = APE_smearing(file)

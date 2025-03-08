@@ -571,3 +571,23 @@ function confignames(file)
     end
     return fns
 end
+function confignames_and_plaquette(file)
+    fns = AbstractString[]
+    plaquettes = Float64[]
+    for line in eachline(file)
+        if occursin("read",line)
+            if occursin("Configuration",line)
+                pos1 = findlast('/',line)
+                pos2 = findnext(']',line,pos1)
+                push!(fns,line[pos1+1:pos2-1])
+            end
+        end
+        if occursin("Plaquette",line)
+            line = replace(line,"="=>" ")
+            line = replace(line,":"=>" ")
+            p = parse(Float64,split(line)[end])
+            append!(plaquettes,p)
+        end
+    end
+    return fns, plaquettes
+end
