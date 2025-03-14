@@ -18,8 +18,8 @@ function _write_lattice_setup(file,h5file;mixed_rep=false,h5group="",sort=false,
     # write information on the applied sorting and deduplication to file
     h5write(h5file,joinpath(h5group,"sorted"),sort)
     h5write(h5file,joinpath(h5group,"deduplicated"),deduplicate)
-    h5write(h5file,joinpath(h5group,"sort_permutation"),perm)
-    h5write(h5file,joinpath(h5group,"deduplicated_indices"),inds)
+    h5write(h5file,joinpath(h5group,"sort_permutation"),collect(perm))
+    h5write(h5file,joinpath(h5group,"deduplicated_indices"),collect(inds))
     # get smearing parameters (arrays are empty if no smearing is used)
     if smearing
         APE_eps, APE_level = APE_smearing(file)

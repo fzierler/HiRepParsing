@@ -1,4 +1,4 @@
-using Pkg; Pkg.activate(".")
+using Pkg; Pkg.activate("."); Pkg.instantiate()
 using HiRepParsing
 using HDF5
 using DelimitedFiles
