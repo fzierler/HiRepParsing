@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.1"
+julia_version = "1.11.4"
 manifest_format = "2.0"
-project_hash = "ed53f20e480b9d79772b7b84896b0d7afc232407"
+project_hash = "d1d001d3f9edcc82ad8eb3973ad783e17290646c"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -70,6 +70,13 @@ deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LazyArtifac
 git-tree-sha1 = "82a471768b513dc39e471540fdadc84ff80ff997"
 uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
 version = "1.14.3+3"
+
+[[deps.HiRepOutputCleaner]]
+git-tree-sha1 = "1104e119fe232e7bd3f1b977631bee053bf2269c"
+repo-rev = "main"
+repo-url = "https://github.com/fzierler/HiRepOutputCleaner"
+uuid = "a6578ec9-e5ba-419d-b25f-68053db3bc00"
+version = "0.1.0"
 
 [[deps.Hwloc_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
