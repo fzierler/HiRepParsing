@@ -72,8 +72,8 @@ uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
 version = "1.14.3+3"
 
 [[deps.HiRepOutputCleaner]]
-git-tree-sha1 = "1104e119fe232e7bd3f1b977631bee053bf2269c"
-repo-rev = "main"
+git-tree-sha1 = "7a7c401dc6b8b112541be753a8dc542b130a263b"
+repo-rev = "6e8fbab26e1ea3abdc0ad4532c4953571b4eee0f"
 repo-url = "https://github.com/fzierler/HiRepOutputCleaner"
 uuid = "a6578ec9-e5ba-419d-b25f-68053db3bc00"
 version = "0.1.0"
