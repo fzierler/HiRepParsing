@@ -130,13 +130,13 @@ function writehdf5_spectrum_disconnected_with_regexp(file,h5file,rgx::Regex,nhit
     end
     close(dataset)
 end
-function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5group="",setup=true,mixed_rep=false, h5group_setup = h5group,filter_channels=false,channels=nothing, kws...)
+function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5group="",setup=true,mixed_rep=false, parse_imaginary =true, h5group_setup = h5group,filter_channels=false,channels=nothing, kws...)
     names = confignames(file)
     perm  = sort ? permutation_names(names) : collect(eachindex(names))
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
 
     # read correlator data
-    c = parse_spectrum_with_regexp(file,rgx;disconnected=false,with_progress=true,filter_channels,channels)
+    c = parse_spectrum_with_regexp(file,rgx;disconnected=false,with_progress=true,filter_channels,channels,parse_imaginary)
     # write matrices to file
     dataset = h5open(h5file,"cw")
     for key in keys(c)

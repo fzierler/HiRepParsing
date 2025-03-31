@@ -332,7 +332,7 @@ end
 #####################################################
 # Parsing using regular expressions (for smearing)  #
 #####################################################
-function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,mass="",filter_channels=false,channels="",nhits=1,with_progress=false)
+function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,mass="",filter_channels=false,channels="",nhits=1,with_progress=false,parse_imaginary=true)
     T = latticesize(file)[1]
     corr = zeros(T) # preallocate array for parsing of correlator
     dict = Dict{String,Vector{Float64}}()
@@ -342,9 +342,17 @@ function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,ma
     # when filtering for specific keys also allow them to end with "_re" and "_im"
     if filter_channels
         if disconnected
-            all_channels = hcat(channels,channels.*"_disc_re",channels.*"_disc_im")
+            if parse_imaginary
+                all_channels = hcat(channels,channels.*"_disc_re",channels.*"_disc_im")
+            else
+                all_channels = hcat(channels,channels.*"_disc_re")
+            end
         else
-            all_channels = hcat(channels,channels.*"_re",    channels.*"_im")
+            if parse_imaginary
+                all_channels = hcat(channels,channels.*"_re",    channels.*"_im")
+            else
+                all_channels = hcat(channels,channels.*"_re")
+            end
         end
     end
     # keep track of position in file for progress meter
