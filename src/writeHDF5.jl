@@ -55,12 +55,12 @@ function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;
     end
 end
 
-function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group,filter_channels=false,channels=nothing, kws...)
+function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup=h5group,filter_channels=false,channels=nothing,re_im=true,kws...)
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     # read correlator data
-    c = parse_spectrum(file,type;disconnected=false,filter_channels,channels)
+    c = parse_spectrum(file,type;disconnected=false,filter_channels,channels,re_im)
     # write matrices to file
     for Γ in keys(c)
         label = joinpath(h5group,type,Γ)
@@ -90,14 +90,14 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=
     close(dataset)
 end
 
-function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",setup=true,mixed_rep=false, h5group_setup = h5group,filter_channels=false,channels=nothing, kws...) where T <: AbstractString
+function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",setup=true,mixed_rep=false, h5group_setup = h5group,filter_channels=false,channels=nothing,re_im=true, kws...) where T <: AbstractString
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     # read correlator data
     dataset = h5open(h5file,"cw")
     @showprogress "Parse logfile for connected diagrams:" for type in types
-        c = parse_spectrum(file,type;disconnected=false,with_progress=false,filter_channels,channels)
+        c = parse_spectrum(file,type;disconnected=false,with_progress=false,filter_channels,channels,re_im)
         # write matrices to file
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)

@@ -221,7 +221,7 @@ function correlators_logfile(file,type,key;kws...)
     corrs = parse_spectrum(file,type;filter_channels=true,channels=[key],kws...)
     return reduce(hcat,getindex.(corrs,key))
 end
-function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter_channels=false,channels="",nhits=1,with_progress=false)
+function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter_channels=false,channels="",nhits=1,with_progress=false,re_im=true)
     T = latticesize(file)[1]
     corr = zeros(T) # preallocate array for parsing of correlator
     dict = Dict{String,Vector{Float64}}()
@@ -230,10 +230,13 @@ function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter
     src0  = 0
     # when filtering for specific keys also allow them to end with "_re" and "_im"
     if filter_channels
-        if disconnected
-            all_channels = hcat(channels,channels.*"_disc_re",channels.*"_disc_im")
-        else
-            all_channels = hcat(channels,channels.*"_re",    channels.*"_im")
+        all_channels = channels
+        if re_im
+            if disconnected
+                all_channels = hcat(channels,channels.*"_disc_re",channels.*"_disc_im")
+            else
+                all_channels = hcat(channels,channels.*"_re",    channels.*"_im")
+            end
         end
     end
     # keep track of position in file for progress meter
