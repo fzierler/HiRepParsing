@@ -4,3 +4,4 @@
 *.h5
 *.code-workspace
 *.txt
+!input/channels_chimera.txt
