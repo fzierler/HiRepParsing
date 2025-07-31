@@ -20,7 +20,7 @@ function main(listfile,h5file;setup=true,filter_channels=false,channels=nothing)
         if filesize(tmp_filename) > 0
             ensemble = match(r"Lt[0-9]+Ls[0-9]+beta[0-9]+.[0-9]+mas-[0-9]+.[0-9]+FUN",file).match
             smearing_regex = r"source_N[0-9]+_sink_N[0-9]+"
-            writehdf5_spectrum_with_regexp(tmp_filename,h5file,smearing_regex;mixed_rep=false,h5group=ensemble,setup,filter_channels,channels,sort=true)
+            writehdf5_spectrum_with_regexp(tmp_filename,h5file,smearing_regex;mixed_rep=false,h5group=ensemble,setup,filter_channels,channels,sort=true,deduplicate=true)
         end
         rm(tmp_filename)
     end

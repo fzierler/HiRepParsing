@@ -39,9 +39,10 @@ function _write_lattice_setup(file,h5file;mixed_rep=false,h5group="",sort=false,
     end
 end
 
-function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group,filter_channels=false,channels=nothing, kws...)
+function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group,filter_channels=false,channels=nothing,deduplicate=false,kws...)
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
+    inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm]) 
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     setup && h5write(h5file,joinpath(h5group_setup,"sources"),nhits)
     # read correlator data
@@ -50,14 +51,14 @@ function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;
     for Γ in keys(c)
         label = joinpath(h5group,type,Γ)
         filter_channels && Γ ∉ channels && continue
-        sort && h5write(h5file,label,c[Γ][perm,:,:];kws...)
-        sort || h5write(h5file,label,c[Γ];kws...)
+        h5write(h5file,label,c[Γ][inds,:,:];kws...)
     end
 end
 
-function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup=h5group,filter_channels=false,channels=nothing,re_im=true,kws...)
+function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup=h5group,filter_channels=false,channels=nothing,re_im=true,deduplicate=false,kws...)
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
+    inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm])  
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     # read correlator data
     c = parse_spectrum(file,type;disconnected=false,filter_channels,channels,re_im)
@@ -65,14 +66,14 @@ function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group=
     for Γ in keys(c)
         label = joinpath(h5group,type,Γ)
         filter_channels && Γ ∉ channels && continue
-        sort && h5write(h5file,label,c[Γ][perm,:];kws...)
-        sort || h5write(h5file,label,c[Γ];kws...)
+        h5write(h5file,label,c[Γ][inds,:];kws...)
     end
 end
 
-function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group,filter_channels=false,channels=nothing, kws...) where T <: AbstractString
+function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group,filter_channels=false,channels=nothing,deduplicate=false,kws...) where T <: AbstractString
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))    
+    inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm])  
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     setup && h5write(h5file,joinpath(h5group_setup,"sources"),nhits)
     dataset = h5open(h5file,"cw")
@@ -83,16 +84,16 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
             filter_channels && Γ ∉ channels && continue
-            sort && write(dataset,label,c[Γ][perm,:,:];kws...)
-            sort || write(dataset,label,c[Γ];kws...)
+            write(dataset,label,c[Γ][inds,:,:];kws...)
         end
     end
     close(dataset)
 end
 
-function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",setup=true,mixed_rep=false, h5group_setup = h5group,filter_channels=false,channels=nothing,re_im=true, kws...) where T <: AbstractString
+function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",setup=true,mixed_rep=false, h5group_setup = h5group,filter_channels=false,channels=nothing,re_im=true,deduplicate=false,kws...) where T <: AbstractString
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
+    inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm])  
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     # read correlator data
     dataset = h5open(h5file,"cw")
@@ -102,8 +103,7 @@ function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",se
         for Γ in keys(c)
             label = joinpath(h5group,type,Γ)
             filter_channels && Γ ∉ channels && continue
-            sort && write(dataset,label,c[Γ][perm,:];kws...)
-            sort || write(dataset,label,c[Γ];kws...)
+            write(dataset,label,c[Γ][inds,:];kws...)
         end
     end
     close(dataset)
@@ -111,9 +111,10 @@ end
 #####################################################
 # Parsing using regular expressions (for smearing)  #
 #####################################################
-function writehdf5_spectrum_disconnected_with_regexp(file,h5file,rgx::Regex,nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group,filter_channels=false,channels=nothing, kws...)
+function writehdf5_spectrum_disconnected_with_regexp(file,h5file,rgx::Regex,nhits;sort=false,h5group="",setup=true,mixed_rep=false,h5group_setup = h5group,filter_channels=false,channels=nothing,deduplicate=false,kws...)
     names = confignames(file)
-    perm  = sort ? permutation_names(names) :  collect(eachindex(names))    
+    perm  = sort ? permutation_names(names) :  collect(eachindex(names))
+    inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm])  
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
     setup && h5write(h5file,joinpath(h5group_setup,"sources"),nhits)
 
@@ -125,14 +126,14 @@ function writehdf5_spectrum_disconnected_with_regexp(file,h5file,rgx::Regex,nhit
         type,Γ = splitpath(key)
         label = joinpath(h5group,type,Γ)
         filter_channels && Γ ∉ channels && continue
-        sort && write(dataset,label,c[key][perm,:,:];kws...)
-        sort || write(dataset,label,c[key];kws...)
+        write(dataset,label,c[key][inds,:,:];kws...)
     end
     close(dataset)
 end
-function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5group="",setup=true,mixed_rep=false, parse_imaginary =true, h5group_setup = h5group,filter_channels=false,channels=nothing, kws...)
+function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5group="",setup=true,mixed_rep=false, parse_imaginary =true, h5group_setup = h5group,filter_channels=false,channels=nothing,deduplicate=false,kws...)
     names = confignames(file)
     perm  = sort ? permutation_names(names) : collect(eachindex(names))
+    inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm])  
     setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
 
     # read correlator data
@@ -143,8 +144,7 @@ function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5grou
         type,Γ = splitpath(key)
         label  = joinpath(h5group,type,Γ)
         filter_channels && Γ ∉ channels && continue
-        sort && write(dataset,label,c[key][perm,:];kws...)
-        sort || write(dataset,label,c[key];kws...)
+        write(dataset,label,c[key][inds,:];kws...)
     end
     close(dataset)
 end
