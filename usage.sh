@@ -1,0 +1,1 @@
+julia scripts/write_chimera.jl --h5file ../retest_branch.hdf5 --channels input/channels_chimera.txt $(readlink -f ../DataRelease_CB_LSD/logs/*.txt | xargs)
