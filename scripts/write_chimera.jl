@@ -23,7 +23,7 @@ function main(files,h5file;filter_channels=false,channels=nothing,setup=true)
         m = match(regex,basename(file))
         N1 = parse(Int,m[:N1])
         N2 = parse(Int,m[:N2])
-        name  = first(splitext(basename(file)))
+        name  = replace(basename(file),r"(\.txt|\.zst|\.zstd)"=>"")
         
         # parse the ensemble name from the filename 
         # (again this depends strongly on the naming scheme)

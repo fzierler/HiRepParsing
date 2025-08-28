@@ -3,6 +3,9 @@ module HiRepParsing
 using HDF5
 using Parsers
 using ProgressMeter
+# compression support
+using TranscodingStreams
+using CodecZstd
 
 include("parse.jl")
 export parse_spectrum, parse_disconnected, parse_spectrum_with_regexp

@@ -1,3 +1,11 @@
+function makestream(filepath)
+    if endswith(filepath, ".zstd") || endswith(filepath, ".zst")
+        codec = ZstdDecompressor()
+    else
+        codec = Noop()
+    end
+    return TranscodingStream(codec, open(filepath))
+end
 function gaugegroup(file)
     if HDF5.ishdf5(file) 
         hdf5 = h5open(file, "r")
@@ -98,7 +106,8 @@ function reshape_disconnected(d::Matrix{S},nhits;rescale=1) where S
     return m
 end
 function gaugegroup_log(file)
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if occursin("Gauge group",line)
             pos = findlast(' ',line)
             return strip(line[pos:end])
@@ -107,7 +116,8 @@ function gaugegroup_log(file)
 end
 function quarkmasses_log(file;pattern="[MAIN][0]Mass[0]")
     masses = Float64[]
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if occursin(pattern,line)
             s = split(line,(","))
             for i in eachindex(s)
@@ -124,7 +134,8 @@ function quarkmasses_chimera_log(file)
     return mf, mas
 end
 function latticesize_log(file)
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if occursin("Global size is",line)
             pos  = last(findfirst("Global size is",line))+1
             sizestring  = lstrip(line[pos:end])
@@ -135,7 +146,8 @@ function latticesize_log(file)
 end
 function plaquettes_log(file)
     plaquettes = Float64[]
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if occursin("Plaquette",line)
             line = replace(line,"="=>" ")
             line = replace(line,":"=>" ")
@@ -155,7 +167,8 @@ function inverse_coupling_log(file)
         β = parse(Float64,split(l,"m")[1])
         return β
     catch
-        for line in eachline(file)
+        io = makestream(file)
+        for line in eachline(io)
             if occursin("Configuration from",line)
                 match = _match_config_name(line)
                 β = parse(Float64,match[:beta])
@@ -169,7 +182,8 @@ function APE_smearing_logfile(file)
     APE_eps   = Float64[]
     # start with reference level for no smearing
     N = -1
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if startswith(line,"[APE][0]APE smearing with val")
             eps = parse(Float64,last(split(line,"="))) 
             append!(APE_eps,eps)
@@ -195,7 +209,8 @@ function Wuppertal_smearing_mixed_logfile(file)
     epsA = 0.0
     epsF = 0.0
 
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if startswith(line,"[SMEAR][0]source smearing epsilon =")
             pos1 = length("[SMEAR][0]source smearing epsilon =") + 1
             pos2 = first(findfirst("iterations:",line)) - 1
@@ -233,8 +248,9 @@ function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter
         end
     end
     # keep track of position in file for progress meter
-    with_progress && (p = Progress(countlines(file); dt=1, desc="Match $type: Progress:"))
-    for line in eachline(file)
+    with_progress && (p = Progress(countlines(makestream(file)); dt=1, desc="Match $type: Progress:"))
+    io = makestream(file)
+    for line in eachline(io)
         with_progress && next!(p)
         if occursin(type,line)
             if masses
@@ -345,10 +361,11 @@ function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,ma
     end
     # keep track of position in file for progress meter
     if with_progress 
-        p = Progress(countlines(file); dt=1, desc="Match $type: Progress:")
+        p = Progress(countlines(makestream(file)); dt=1, desc="Match $type: Progress:")
         linecount = 0
     end
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if with_progress
             linecount += 1
             # don't update the progress meter after every line
@@ -427,7 +444,8 @@ end
 # Disconnected Measurements from /Disocnnected  #
 ################################################# 
 function dilution(file)
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if occursin("will be used",line)
             eo    = occursin("eo"   ,lowercase(line))
             time  = occursin("time" ,lowercase(line))
@@ -438,7 +456,8 @@ function dilution(file)
     end
 end
 function ncolors(file)
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if occursin("Gauge group",line)
             pos1 = findfirst('(',line)+1
             pos2 = findfirst(')',line)-1
@@ -448,7 +467,8 @@ function ncolors(file)
     end
 end
 function hits(file)
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if occursin("Number of noise vector : nhits",line)
             pos = findfirst('=',line)
             nhits =  parse(Int,line[pos+1:end])
@@ -458,7 +478,8 @@ function hits(file)
 end
 function nconfigs(file)
     nconf = 0 
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if occursin("read",line)
             nconf += 1
         end
@@ -484,8 +505,9 @@ function parse_disconnected(file)
     conf = 0
     col = 1
     eoi = 1
-    p = Progress(countlines(file),1)
-    for line in eachline(file)
+    p = Progress(countlines(makestream(file)),1)
+    io = makestream(file)
+    for line in eachline(io)
         if startswith(line,"[CORR][0]")
             # remove lines containing the statements
             # "Contraction done" and "Start to perform contractions"
@@ -556,7 +578,8 @@ end
 
 function confignames(file)
     fns = AbstractString[]
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if occursin("read",line)
             if occursin("Configuration",line)
                 pos1 = findlast('/',line)
