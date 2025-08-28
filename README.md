@@ -12,7 +12,3 @@ using Pkg
 Pkg.activate(".")
 Pkg.instantiate()
 ```
-
-- Run the script that you want to execute (e.g. `scripts/write_chimera.jl`) in that julia session with the command `include("scripts/write_chimera.jl")`
-
-- Alternatively, you can run it from your favourite shell. Include the above code snippet at the start of the script, and then run `julia scripts/write_chimera.jl`

@@ -1,6 +1,4 @@
 using Pkg
-Pkg.activate(".")
-Pkg.instantiate()
 using HiRepParsing
 using HDF5
 using ArgParse
