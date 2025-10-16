@@ -221,7 +221,7 @@ function correlators_logfile(file,type,key;kws...)
     corrs = parse_spectrum(file,type;filter_channels=true,channels=[key],kws...)
     return reduce(hcat,getindex.(corrs,key))
 end
-function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter_channels=false,channels="",nhits=1,with_progress=false,re_im=true)
+function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter_channels=false,channels="",nhits=1,with_progress=false,re_im=true,end_of_measurement="analysed")
     T = latticesize(file)[1]
     corr = zeros(T) # preallocate array for parsing of correlator
     dict = Dict{String,Vector{Float64}}()
@@ -297,7 +297,9 @@ function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter
             # In this case the end of measurement on a given confiuration is 
             # signalled by a line that reads:
             # [MAIN][0]Configuration #N: analysed in [a sec b usec]
-            if occursin("analysed",line)
+            # Thus the default value is 
+            # end_of_measuremen = "analysed" 
+            if occursin(end_of_measurement,line)
                 if !isempty(dict)
                     push!(dictarray,dict)
                     dict = Dict{String,Vector{Float64}}()
