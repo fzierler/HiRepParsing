@@ -16,4 +16,4 @@ function main(listfile,h5file;setup=true,filter_channels=false,channels=nothing)
     end
 end
 
-main("input/listfile.txt","test.hdf5")
+main("input/listfile.txt","test.hdf5",filter_channels=true,channels=readdlm("input/channels_for_glueballs"))
