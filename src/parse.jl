@@ -116,10 +116,12 @@ function gaugegroup_log(file)
     io = makestream(file)
     for line in eachline(io)
         if occursin("Gauge group",line)
+            close(io)
             pos = findlast(' ',line)
             return strip(line[pos:end])
         end
     end
+    close(io)
     return ""
 end
 function quarkmasses_log(file;pattern=r"\[MAIN\]\[0\](M|m)ass")
@@ -133,9 +135,11 @@ function quarkmasses_log(file;pattern=r"\[MAIN\]\[0\](M|m)ass")
                 m  = parse.(Float64,s0)
                 append!(masses,m)
             end
+            close(io)
             return unique(masses)
         end
     end
+    close(io)
     return ""
 end
 function quarkmasses_chimera_log(file)
@@ -150,9 +154,11 @@ function latticesize_log(file)
             pos  = last(findfirst("Global size is",line))+1
             sizestring  = lstrip(line[pos:end])
             latticesize = parse.(Int,split(sizestring,"x"))
+            close(io)
             return latticesize
         end
     end
+    close(io)
     return ""
 end
 function plaquettes_log(file)
@@ -166,6 +172,7 @@ function plaquettes_log(file)
             append!(plaquettes,p)
         end
     end
+    close(io)
     return plaquettes
 end
 function _match_config_name(filename)
@@ -183,9 +190,11 @@ function inverse_coupling_log(file)
             if occursin("Configuration from",line)
                 match = _match_config_name(line)
                 β = parse(Float64,match[:beta])
+                close(io)
                 return β
             end
         end
+        close(io)
     end
 end
 function APE_smearing_logfile(file)
@@ -210,6 +219,7 @@ function APE_smearing_logfile(file)
             N = -1 # reset to reference value for no smearing
         end
     end
+    close(io)
     return APE_eps, APE_level
 end
 function Wuppertal_smearing_mixed_logfile(file)
@@ -237,6 +247,7 @@ function Wuppertal_smearing_mixed_logfile(file)
             append!(fundamental_eps,epsF)
         end
     end
+    close(io)
     return antisymmetric_eps, fundamental_eps
 end
 function correlators_logfile(file,type,key;kws...)
@@ -333,6 +344,7 @@ function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter
     if !isempty(dict)
         push!(dictarray,dict)
     end
+    close(io)
     return _reshape_connected(dictarray;disconnected,nhits)
 end
 function _reshape_connected(dict;disconnected=false,nhits=1)
@@ -462,6 +474,7 @@ function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,ma
     if !isempty(dict)
         push!(dictarray,dict)
     end
+    close(io)
     return _reshape_connected(dictarray;disconnected,nhits)
 end
 #################################################
@@ -475,9 +488,11 @@ function dilution(file)
             time  = occursin("time" ,lowercase(line))
             spin  = occursin("spin" ,lowercase(line))
             color = occursin("color",lowercase(line))
+            close(io)
             return eo, time, spin, color
         end
     end
+    close(io)
 end
 function ncolors(file)
     io = makestream(file)
@@ -486,9 +501,11 @@ function ncolors(file)
             pos1 = findfirst('(',line)+1
             pos2 = findfirst(')',line)-1
             colors = parse(Int,line[pos1:pos2])
+            close(io)
             return colors
         end
     end
+    close(io)
 end
 function hits(file)
     io = makestream(file)
@@ -496,9 +513,11 @@ function hits(file)
         if occursin("Number of noise vector : nhits",line)
             pos = findfirst('=',line)
             nhits =  parse(Int,line[pos+1:end])
+            close(io)
             return nhits
         end
     end
+    close(io)
 end
 function nconfigs(file)
     nconf = 0 
@@ -508,6 +527,7 @@ function nconfigs(file)
             nconf += 1
         end
     end
+    close(io)
     return nconf
 end
 function parse_disconnected(file)
@@ -529,7 +549,9 @@ function parse_disconnected(file)
     conf = 0
     col = 1
     eoi = 1
-    p = Progress(countlines(makestream(file)),1)
+    io = makestream(file)
+    p = Progress(countlines(io),1)
+    close(io)
     io = makestream(file)
     for line in eachline(io)
         if startswith(line,"[CORR][0]")
@@ -570,6 +592,7 @@ function parse_disconnected(file)
         end
         next!(p)
     end
+    close(io)
     return average_dilution(data)
 end
 function average_dilution(d::Array{S,6}) where S
@@ -612,12 +635,14 @@ function confignames(file)
             end
         end
     end
+    close(io)
     return fns
 end
 function confignames_and_plaquette(file)
     fns = AbstractString[]
     plaquettes = Float64[]
-    for line in eachline(file)
+    io = makestream(file)
+    for line in eachline(io)
         if startswith(line,"[IO][0]Configuration")
             # parse filename first
             pos1 = findlast('/',line)
@@ -629,5 +654,6 @@ function confignames_and_plaquette(file)
             append!(plaquettes,p)
         end
     end
+    close(io)
     return fns, plaquettes
 end
