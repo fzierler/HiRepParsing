@@ -1,4 +1,11 @@
 function makestream(filepath)
+    # if the file does not exist see if there is a file with a corresponding zstd file extension
+    if !isfile(filepath) && isfile(filepath*".zst")
+        filepath = filepath*".zst"
+    elseif !isfile(filepath) && isfile(filepath*".zstd")
+        filepath = filepath*".zstd"
+    end
+    # if the file is a zstd file use a decompressor, otherwise just read the file
     if endswith(filepath, ".zstd") || endswith(filepath, ".zst")
         codec = ZstdDecompressor()
     else
