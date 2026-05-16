@@ -43,7 +43,7 @@ function writehdf5_spectrum_disconnected(file,h5file,type::AbstractString,nhits;
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm]) 
-    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
+    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort,deduplicate)
     setup && h5write(h5file,joinpath(h5group_setup,"sources"),nhits)
     # read correlator data
     c = parse_spectrum(file,type;disconnected=true,nhits,filter_channels,channels)
@@ -59,7 +59,7 @@ function writehdf5_spectrum(file,h5file,type::AbstractString;sort=false,h5group=
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm])  
-    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
+    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort,deduplicate)
     # read correlator data
     c = parse_spectrum(file,type;disconnected=false,filter_channels,channels,re_im)
     # write matrices to file
@@ -74,7 +74,7 @@ function writehdf5_spectrum_disconnected(file,h5file,types::Array{T},nhits;sort=
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))    
     inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm])  
-    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
+    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort,deduplicate)
     setup && h5write(h5file,joinpath(h5group_setup,"sources"),nhits)
     dataset = h5open(h5file,"cw")
     @showprogress "Parse logfile for disconnected diagrams:" for type in types
@@ -94,7 +94,7 @@ function writehdf5_spectrum(file,h5file,types::Array{T};sort=false,h5group="",se
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm])  
-    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
+    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort,deduplicate)
     # read correlator data
     dataset = h5open(h5file,"cw")
     @showprogress "Parse logfile for connected diagrams:" for type in types
@@ -115,7 +115,7 @@ function writehdf5_spectrum_disconnected_with_regexp(file,h5file,rgx::Regex,nhit
     names = confignames(file)
     perm  = sort ? permutation_names(names) :  collect(eachindex(names))
     inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm])  
-    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
+    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort,deduplicate)
     setup && h5write(h5file,joinpath(h5group_setup,"sources"),nhits)
 
     # read correlator data
@@ -134,7 +134,7 @@ function writehdf5_spectrum_with_regexp(file,h5file,rgx::Regex;sort=false,h5grou
     names = confignames(file)
     perm  = sort ? permutation_names(names) : collect(eachindex(names))
     inds  = deduplicate ? unique_indices(names[perm]) : eachindex(names[perm])  
-    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort)
+    setup && _write_lattice_setup(file,h5file;mixed_rep,h5group=h5group_setup,sort,deduplicate)
 
     # read correlator data
     c = parse_spectrum_with_regexp(file,rgx;disconnected=false,with_progress=true,filter_channels,channels,parse_imaginary)
