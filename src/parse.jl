@@ -273,7 +273,7 @@ function parse_spectrum(file,type;disconnected=false,masses=false,mass="",filter
         end
     end
     # keep track of position in file for progress meter
-    with_progress && (p = Progress(countlines(makestream(file)); dt=1, desc="Match $type: Progress:"))
+    with_progress && (p = Progress(countlines(makestream(file)); dt=1, desc="Parse $file:"))
     io = makestream(file)
     for line in eachline(io)
         with_progress && next!(p)
@@ -397,7 +397,7 @@ function parse_spectrum_with_regexp(file,type;disconnected=false,masses=false,ma
     end
     # keep track of position in file for progress meter
     if with_progress 
-        p = Progress(countlines(makestream(file)); dt=1, desc="Match $type: Progress:")
+        p = Progress(countlines(makestream(file)); dt=1, desc="Parse $file:")
         linecount = 0
     end
     io = makestream(file)
